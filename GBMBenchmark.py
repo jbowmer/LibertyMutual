@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Jul 11 23:24:30 2015
+Created on Sun Jul 12 21:26:43 2015
 
 @author: Jake
 """
 
-#Recreate random forest benchmark:
+#Recreate gbm benchmark:
 
 import os
 import pandas as pd
@@ -51,18 +51,24 @@ X = std_scale.transform(X)
 test = std_scale.transform(test)
 
 
+#Tranform Y variable:
+Y_log = np.log(Y)
+
+#Base GBM model:
+from sklearn.ensemble import GradientBoostingRegressor
+gbm_mod = GradientBoostingRegressor(n_estimators = 500)
+gbm_bag = BaggingRegressor(gbm_mod, n_estimators = 50, oob_score = True)
+gbm_bag.fit(X, Y)
+gbm_bag_predicted = gbm_bag.predict(test)
 
 
-#Base RF model:
-from sklearn.ensemble import RandomForestRegressor
-rf_mod = RandomForestRegressor(n_estimators = 100)
-rf_mod.fit(X, Y)
-rf_mod_predicted = rf_mod.predict(test)
+gbm_log_mod = GradientBoostingRegressor(n_estimators = 500)
+gbm_log_bag = BaggingRegressor(gbm_log_mod, n_estimators = 50, oob_score = True)
+gbm_bag.fit(X, Y_log)
 
 
 
 #Submission:
-
-submission = pd.DataFrame({'Id': test_id, 'Hazard': rf_mod_predicted})
+submission = pd.DataFrame({'Id': test_id, 'Hazard': gbm_bag_predicted})
 submission = submission.set_index('Id')
-submission.to_csv('rf_benchmark.csv')
+submission.to_csv('gbm_benchmark.csv')

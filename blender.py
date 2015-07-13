@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Jul 11 23:24:30 2015
+Created on Mon Jul 13 17:31:18 2015
 
 @author: Jake
 """
 
-#Recreate random forest benchmark:
+#Blended GBM and RF Bag results:
+
+#Recreate gbm benchmark:
 
 import os
 import pandas as pd
@@ -53,16 +55,22 @@ test = std_scale.transform(test)
 
 
 
+#Base GBM model:
+from sklearn.ensemble import GradientBoostingRegressor
+gbm_mod = GradientBoostingRegressor(n_estimators = 100)
+gbm_bag = BaggingRegressor(gbm_mod, n_estimators = 50, oob_score = True)
+gbm_bag.fit(X, Y)
+gbm_bag_predicted = gbm_bag.predict(test)
+
+
 #Base RF model:
 from sklearn.ensemble import RandomForestRegressor
 rf_mod = RandomForestRegressor(n_estimators = 100)
 rf_mod.fit(X, Y)
 rf_mod_predicted = rf_mod.predict(test)
 
+blended_prediction = (gbm_bag_predicted + rf_mod_predicted)/2
 
-
-#Submission:
-
-submission = pd.DataFrame({'Id': test_id, 'Hazard': rf_mod_predicted})
+submission = pd.DataFrame({'Id': test_id, 'Hazard': blended_prediction})
 submission = submission.set_index('Id')
-submission.to_csv('rf_benchmark.csv')
+submission.to_csv('blender.csv')
