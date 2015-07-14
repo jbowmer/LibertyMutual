@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Jul 12 21:26:43 2015
+Created on Tue Jul 14 09:58:13 2015
 
 @author: Jake
 """
 
-#Recreate gbm benchmark:
+#using natural log to redefine y
 
 import os
 import pandas as pd
@@ -50,28 +50,17 @@ std_scale = preprocessing.StandardScaler().fit(X)
 X = std_scale.transform(X)
 test = std_scale.transform(test)
 
-
 #Tranform Y variable:
 Y_log = np.log(Y)
-
-#Base GBM model:
-from sklearn.ensemble import GradientBoostingRegressor
-gbm_mod = GradientBoostingRegressor(n_estimators = 500)
-gbm_bag = BaggingRegressor(gbm_mod, n_estimators = 50, oob_score = True)
-gbm_bag.fit(X, Y)
-gbm_bag_predicted = gbm_bag.predict(test)
-
 
 gbm_log_mod = GradientBoostingRegressor(n_estimators = 500)
 gbm_log_bag = BaggingRegressor(gbm_log_mod, n_estimators = 50, oob_score = True)
 gbm_bag.fit(X, Y_log)
 
+gbm_bag_predicted = gbm_bag.predict(test)
 
+gbm_bag_predicted = np.exp(gbm_bag_predicted)
 
-#gbm_log_mod_test_pred = gbm_bag.predict(X_test)
-#Gini(Y_test, gbm_log_mod_test_pred) #45.8
-
-#Submission:
 submission = pd.DataFrame({'Id': test_id, 'Hazard': gbm_bag_predicted})
 submission = submission.set_index('Id')
-submission.to_csv('gbm_benchmark.csv')
+submission.to_csv('gbm_log.csv')
