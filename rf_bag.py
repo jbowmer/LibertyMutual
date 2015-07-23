@@ -51,14 +51,24 @@ test = std_scale.transform(test)
 #Tranform Y variable:
 Y_log = np.log(Y)
 
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import BaggingRegressor
 rf_log_mod = RandomForestRegressor(n_estimators = 500)
-rf_log_bag = BaggingRegressor(rf_log_mod, n_estimators = 50, oob_score = True)
-rf_bag.fit(X, Y_log)
+rf_log_mod.fit(X, Y_log)
 
-rf_bag_predicted = rf_bag.predict(test)
+rf_log_mod_predicted = rf_log_mod.predict(test)
 
-rf_bag_predicted = np.exp(rf_bag_predicted)
+rf_log_mod_predicted = np.exp(rf_log_mod_predicted)
 
-submission = pd.DataFrame({'Id': test_id, 'Hazard': rf_bag_predicted})
+submission = pd.DataFrame({'Id': test_id, 'Hazard': rf_log_mod_predicted})
 submission = submission.set_index('Id')
 submission.to_csv('rf_log.csv')
+
+
+#a simple blender:
+
+blended_prediction = (gbm_bag_predicted + rf_log_mod_predicted)/2
+
+submission = pd.DataFrame({'Id': test_id, 'Hazard': blended_prediction})
+submission = submission.set_index('Id')
+submission.to_csv('blender.csv')
