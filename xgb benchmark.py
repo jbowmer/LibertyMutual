@@ -32,7 +32,8 @@ for i in range(test.shape[1]):
         test[:,i] = lbl.transform(test[:,i])
 
 params = {"objective": "reg:linear",          
-          "max_depth": 5,
+          "max_depth": 10,
+          "num_round": 1000,
           "seed": 1}
 
 est = xgb.train(params, xgb.DMatrix(X_train, np.log(Y_train)))
